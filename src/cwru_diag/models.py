@@ -73,6 +73,27 @@ def _standardize_per_window(X: np.ndarray) -> np.ndarray:
     return (X - mu) / sd
 
 
+def augment_noise(X: np.ndarray, snr_choices: list, seed: int = 0) -> np.ndarray:
+    """噪声增广：每个窗口独立随机抽一个 SNR（dB），None 表示保持干净。
+
+    噪声功率按该窗口自身的平均功率换算（与 08 脚本的 add_noise 同口径），
+    返回 dtype 与输入一致。
+    """
+    if not snr_choices:
+        raise ValueError("snr_choices 不能为空")
+    rng = np.random.default_rng(seed)
+    Xf = X.astype(np.float64, copy=True)
+    picks = rng.integers(0, len(snr_choices), size=len(Xf))
+    p_sig = (Xf ** 2).mean(axis=1, keepdims=True)
+    for i, snr in enumerate(snr_choices):
+        mask = picks == i
+        if snr is None or not mask.any():
+            continue
+        p_noise = p_sig[mask] / (10 ** (float(snr) / 10.0))
+        Xf[mask] += rng.normal(size=(int(mask.sum()), X.shape[1])) * np.sqrt(p_noise)
+    return Xf.astype(X.dtype if np.issubdtype(X.dtype, np.floating) else np.float32)
+
+
 @dataclass
 class CNNResult:
     model: BearingCNN
@@ -86,8 +107,13 @@ def train_cnn(X_train: np.ndarray, y_train: np.ndarray,
               n_classes: int = 4, epochs: int = 30, batch_size: int = 128,
               lr: float = 1e-3, weight_decay: float = 1e-4, dropout: float = 0.3,
               seed: int = 42, device: str | None = None,
-              patience: int = 8, verbose: bool = True) -> CNNResult:
-    """训练 1D-CNN，按验证集准确率早停并回滚到最优权重。"""
+              patience: int = 8, verbose: bool = True,
+              aug_snrs: list | None = None) -> CNNResult:
+    """训练 1D-CNN，按验证集准确率早停并回滚到最优权重。
+
+    aug_snrs：若给出（如 [None, 10, 6, 2, 0, -4]），每个 epoch 对训练窗口
+    重新抽 SNR 加噪（噪声增广）；验证集始终干净。
+    """
     torch.manual_seed(seed)
     np.random.seed(seed)
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
@@ -97,7 +123,6 @@ def train_cnn(X_train: np.ndarray, y_train: np.ndarray,
     ytr = torch.tensor(y_train, dtype=torch.long)
     yva = torch.tensor(y_val, dtype=torch.long)
 
-    train_loader = DataLoader(TensorDataset(Xtr, ytr), batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(TensorDataset(Xva, yva), batch_size=512, shuffle=False)
 
     model = BearingCNN(n_classes=n_classes, dropout=dropout).to(device)
@@ -109,6 +134,14 @@ def train_cnn(X_train: np.ndarray, y_train: np.ndarray,
     best_state, best_acc, best_epoch, bad = None, -1.0, -1, 0
 
     for epoch in range(1, epochs + 1):
+        if aug_snrs:
+            # 每个 epoch 重新加噪，避免模型记住固定的噪声实现
+            X_ep = augment_noise(X_train, aug_snrs, seed=seed * 10007 + epoch)
+            Xtr_ep = torch.tensor(_standardize_per_window(X_ep)[:, None, :], dtype=torch.float32)
+        else:
+            Xtr_ep = Xtr
+        train_loader = DataLoader(TensorDataset(Xtr_ep, ytr), batch_size=batch_size, shuffle=True)
+
         model.train()
         running = 0.0
         for xb, yb in train_loader:
