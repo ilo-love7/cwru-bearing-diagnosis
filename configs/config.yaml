@@ -1,0 +1,43 @@
+# N1 / CWRU 轴承故障诊断 · 配置
+# 数据根目录：仓库外统一数据集目录（见 02_数据集/README.md）
+data_root: "D:/项目/02_数据集/01_国际公开集/CWRU_轴承"
+raw_dir: "raw"
+manifest: "configs/cwru_manifest.csv"
+
+base_url: "https://engineering.case.edu/sites/default/files"
+
+# 采样率（12k 驱动端数据为 12 kHz；48k 数据本仓库未使用）
+fs: 12000
+# 分段：2048 点 ≈ 170.7 ms（包络谱分辨率 5.86 Hz），50% 重叠
+window: 2048
+overlap: 0.5
+# 分组划分时的“隔离带”：切分点前后各丢弃 1 个窗口，切断重叠泄漏
+guard_windows: 1
+
+classes: ["Normal", "IR", "OR", "B"]
+
+# 轴承几何（驱动端 SKF 6205-2RS JEM）
+bearing:
+  n_balls: 9
+  ball_dia_in: 0.3126
+  pitch_dia_in: 1.537
+  contact_angle_deg: 0.0
+
+classical:
+  svm:
+    C: 10.0
+    gamma: scale
+  rf:
+    n_estimators: 400
+    max_depth: null
+    min_samples_leaf: 1
+
+cnn:
+  epochs: 40
+  batch_size: 128
+  lr: 0.001
+  weight_decay: 0.0001
+  dropout: 0.3
+  seed: 42
+
+seeds: [0, 1, 2, 3, 4]

@@ -1,0 +1,27 @@
+{
+  "n_test": 1883,
+  "models": {
+    "SVM": {
+      "accuracy": 0.266064790228359,
+      "or_recall": 0.266064790228359,
+      "pred_distribution": {
+        "Normal": 0,
+        "IR": 355,
+        "OR": 501,
+        "B": 1027
+      },
+      "n_windows": 1883
+    },
+    "RF": {
+      "accuracy": 0.4232607541157727,
+      "or_recall": 0.4232607541157727,
+      "pred_distribution": {
+        "Normal": 0,
+        "IR": 477,
+        "OR": 797,
+        "B": 609
+      },
+      "n_windows": 1883
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "SVM": {
+    "random_window": 1.0,
+    "time_block": 1.0,
+    "gap": 0.0
+  },
+  "RF": {
+    "random_window": 1.0,
+    "time_block": 0.9997604790419162,
+    "gap": 0.00023952095808377205
+  }
+}

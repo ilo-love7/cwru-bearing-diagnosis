@@ -1,0 +1,9 @@
+# 运行时依赖（Windows / Linux / Colab 通用，CPU 即可）
+numpy>=1.26
+scipy>=1.11
+scikit-learn>=1.3
+pandas>=2.0
+matplotlib>=3.7
+joblib>=1.3
+torch>=2.1          # CPU 版足够；装 GPU 版见 https://pytorch.org
+pytest>=7.4

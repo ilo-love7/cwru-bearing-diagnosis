@@ -1,0 +1,46 @@
+{
+  "n_train": 6246,
+  "n_test": 934,
+  "models": {
+    "SVM": {
+      "two_class_accuracy": 0.873661670235546,
+      "n_eval": 934,
+      "pred_distribution": {
+        "Normal": 0,
+        "IR": 349,
+        "OR": 0,
+        "B": 585
+      },
+      "confusion_matrix_2class": [
+        [
+          349,
+          118
+        ],
+        [
+          0,
+          467
+        ]
+      ]
+    },
+    "RF": {
+      "two_class_accuracy": 0.49250535331905787,
+      "n_eval": 934,
+      "pred_distribution": {
+        "Normal": 0,
+        "IR": 921,
+        "OR": 4,
+        "B": 9
+      },
+      "confusion_matrix_2class": [
+        [
+          459,
+          8
+        ],
+        [
+          462,
+          1
+        ]
+      ]
+    }
+  }
+}

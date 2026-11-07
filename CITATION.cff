@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+title: "CWRU 轴承故障智能诊断：包络阶次特征与跨载荷泛化"
+abstract: >-
+  基于 CWRU 12 kHz 驱动端振动数据的四分类（正常/内圈/外圈/滚动体）诊断基准。
+  包含时域-频域-包络阶次三组特征、SVM/随机森林/1D-CNN 三类模型，以及
+  留一载荷、未见损伤程度、外圈位置三组分布外泛化实验。
+authors:
+  - name: "博远科研"
+version: "1.0.0"
+date-released: "2026-11-07"
+license: MIT
+references:
+  - type: article
+    title: "Rolling element bearing diagnostics—A tutorial"
+    authors:
+      - family-names: Randall
+        given-names: Robert B.
+      - family-names: Antoni
+        given-names: Jérôme
+    journal: "Mechanical Systems and Signal Processing"
+    volume: 25
+    issue: 2
+    start: 485
+    end: 520
+    year: 2011
+    doi: "10.1016/j.ymssp.2010.07.017"
