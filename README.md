@@ -57,6 +57,18 @@
 位置 few-shot（给目标位置文件各 3 个窗口做适配，测试集固定 1675 窗）：SVM 0.265→**0.998**、RF 0.425→0.999、CNN 重训不动（0.32–0.56）、**CNN 冻结骨干微调头 1.000**。
 
 <p align="center">
+  <img src="docs/figures/fig20_position_fewshot.png" width="520" alt="位置 few-shot 适配曲线">
+</p>
+
+上图：横轴是适配窗口占目标位置文件的比例。特征模型 48 个窗口就饱和；CNN 重训（红线）全程不动，冻结骨干微调头（紫线）从最小档就是 1.000。
+
+<p align="center">
+  <img src="docs/figures/fig19_noise_aug.png" width="560" alt="噪声增广 vs 零适配">
+</p>
+
+上图：虚线为零适配（干净训练、带噪测试），实线为增广训练。同一个 SVM，崩溃与否只取决于训练分布覆盖。
+
+<p align="center">
   <img src="docs/figures/fig13_ablation.png" width="520" alt="特征组消融：仅包络阶次最强">
 </p>
 
