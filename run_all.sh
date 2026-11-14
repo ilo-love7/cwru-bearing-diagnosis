@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 一键复现全部指标与图。数据不全时会先下载。
-# 完整链 00–11 全部串起来；只要同工况基线可跑 00–06，深化实验 07–11 可单独跑。
+# 完整链 00–18 全部串起来；v1.1 深化 09–11、v1.2 深化 12–14、v1.3 深化 15–17 可单独跑。
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -41,11 +41,21 @@ $PY scripts/12_sensitivity_217.py
 echo "[10/11] v1.2 深化：跨载荷迁移矩阵 + 载荷探针"
 $PY scripts/13_transfer_matrix.py
 
-echo "[11/11] v1.2 深化：10 分类序数口径 + 消融×协议"
+echo "[11/14] v1.2 深化：10 分类序数口径 + 消融×协议"
 $PY scripts/14_10class_ordinal.py
+
+echo "[12/14] v1.3 深化：特征级域适应（CORAL / KMM / few-shot）"
+$PY scripts/15_domain_adaptation.py
+
+echo "[13/14] v1.3 深化：噪声族与增广公平性（白/有色/脉冲）"
+$PY scripts/16_noise_families.py
+
+echo "[14/14] v1.3 深化：217 剂量曲线 + 样本效率学习曲线"
+$PY scripts/17_dose_learning_curve.py
 
 echo "汇总图表"
 $PY scripts/06_make_figures.py
+$PY scripts/18_summary_v13.py
 
 echo
 echo "完成。指标见 results/metrics/*.json，图见 results/figures/*.png"

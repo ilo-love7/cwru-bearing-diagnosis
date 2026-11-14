@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import copy
 from dataclasses import dataclass
+from typing import Callable
 
 import numpy as np
 import torch
@@ -108,11 +109,14 @@ def train_cnn(X_train: np.ndarray, y_train: np.ndarray,
               lr: float = 1e-3, weight_decay: float = 1e-4, dropout: float = 0.3,
               seed: int = 42, device: str | None = None,
               patience: int = 8, verbose: bool = True,
-              aug_snrs: list | None = None) -> CNNResult:
+              aug_snrs: list | None = None,
+              aug_fn: Callable[[np.ndarray, int], np.ndarray] | None = None) -> CNNResult:
     """训练 1D-CNN，按验证集准确率早停并回滚到最优权重。
 
     aug_snrs：若给出（如 [None, 10, 6, 2, 0, -4]），每个 epoch 对训练窗口
-    重新抽 SNR 加噪（噪声增广）；验证集始终干净。
+    重新抽 SNR 加白噪（v1.1 口径）；验证集始终干净。
+    aug_fn：可选的自定义增广函数 (X_train, epoch) -> X_epoch，用于注入多噪声族
+    增广（v1.3 E33）。给出时优先级高于 aug_snrs，两者互斥使用。
     """
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -134,7 +138,12 @@ def train_cnn(X_train: np.ndarray, y_train: np.ndarray,
     best_state, best_acc, best_epoch, bad = None, -1.0, -1, 0
 
     for epoch in range(1, epochs + 1):
-        if aug_snrs:
+        if aug_fn is not None:
+            X_ep = np.asarray(aug_fn(X_train, epoch))
+            if X_ep.shape != X_train.shape:
+                raise ValueError("aug_fn 返回值形状必须与训练窗口一致")
+            Xtr_ep = torch.tensor(_standardize_per_window(X_ep)[:, None, :], dtype=torch.float32)
+        elif aug_snrs:
             # 每个 epoch 重新加噪，避免模型记住固定的噪声实现
             X_ep = augment_noise(X_train, aug_snrs, seed=seed * 10007 + epoch)
             Xtr_ep = torch.tensor(_standardize_per_window(X_ep)[:, None, :], dtype=torch.float32)
